@@ -4,6 +4,7 @@ namespace CourseHub\Controller;
 
 use CourseHub\Common\Application\Auth\AuthHelper;
 use CourseHub\Common\Domain\Types\RequiredUuid;
+use CourseHub\Course\Application\CourseCompletionReader;
 use CourseHub\Course\Application\CourseReader;
 use CourseHub\Course\Application\CourseValidator;
 use CourseHub\Course\Application\CourseWriter;
@@ -25,7 +26,8 @@ class ExternalCourseController extends AbstractController
         private CourseValidator $courseValidator,
         private CourseReader $courseReader,
         private CourseWriter $courseWriter,
-        private AuthHelper $authHelper
+        private AuthHelper $authHelper,
+        private CourseCompletionReader $courseCompletionReader,
     ) {}
     /**
      * @Route("/course/list", methods={"GET"}, name="course_list")
@@ -37,8 +39,21 @@ class ExternalCourseController extends AbstractController
             return $this->redirectToRoute('login', array());
         }
 
+        $courses = $this->courseReader->findAll();
+
+        if(!is_null($courses)) {
+            foreach($courses as &$course) {
+                $completion = $this->courseCompletionReader->findByCourseAndUserId(
+                    RequiredUuid::fromString($course['uuid']),
+                    RequiredUuid::fromString($this->authHelper->getUser()->getId()->value())
+                );;
+                $course['is_completed'] = (bool) $completion;
+                $course['completion_id'] = is_null($completion) ? null : $completion->getId();
+            }
+        }
+
         return $this->render('course/list.html.twig', [
-            'courses' => $this->courseReader->findAll(),
+            'courses' => $courses,
         ]);
     }
 

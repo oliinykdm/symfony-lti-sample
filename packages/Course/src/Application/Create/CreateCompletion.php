@@ -8,7 +8,6 @@ use CourseHub\Common\Domain\Types\RequiredUuid;
 final class CreateCompletion
 {
     public function __construct(
-        public string $uuid,
         public string $userId,
         public string $courseId,
         public string $score,
@@ -16,10 +15,6 @@ final class CreateCompletion
         public string $dump,
     ) {}
 
-    public function getUuid(): RequiredUuid
-    {
-        return RequiredUuid::fromString($this->uuid);
-    }
     public function getUserId(): RequiredUuid
     {
         return RequiredUuid::fromString($this->userId);

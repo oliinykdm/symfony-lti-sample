@@ -1,1 +1,1 @@
-{"scoreGiven":"64.00000","scoreMaximum":200,"activityProgress":"Completed","gradingProgress":"FullyGraded","timestamp":"2022-12-26T11:10:41+0100","userId":"f334ee11-5aac-4551-a702-a18c3f0e7bea"}
+{"scoreGiven":"85.00000","scoreMaximum":200,"activityProgress":"Completed","gradingProgress":"FullyGraded","timestamp":"2022-12-26T15:13:11+0100","userId":"2073430a-8702-4498-bf4c-b57d6099fbf3"}

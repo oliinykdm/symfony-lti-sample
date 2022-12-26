@@ -5,8 +5,11 @@ namespace CourseHub\Controller;
 use CourseHub\Common\Application\Auth\AuthHelper;
 use CourseHub\Common\Domain\Jwks;
 use CourseHub\Common\Domain\Types\RequiredUuid;
+use CourseHub\Course\Application\CourseCompletionReader;
 use CourseHub\Course\Application\CourseReader;
 use CourseHub\Course\Application\CourseTokenReader;
+use CourseHub\Course\Application\Create\CreateCompletion;
+use CourseHub\Course\Application\Create\CreateCompletionHandler;
 use Firebase\JWT\JWK;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +24,8 @@ class ApiController extends AbstractController
         private CourseReader $courseReader,
         private CourseTokenReader $courseTokenReader,
         private AuthHelper $authHelper,
+        private CreateCompletionHandler $createCompletionHandler,
+        private CourseCompletionReader $courseCompletionReader,
     ) {}
     /**
      * @Route("/api/lti/certs", methods={"GET"}, name="certs")
@@ -121,11 +126,50 @@ class ApiController extends AbstractController
         return $response;
     }
     /**
+     * @Route("/api/lti/completion-info/{completionId}", methods={"POST", "GET"}, name="completion_info")
+     */
+    public function completionInfo($completionId): JsonResponse
+    {
+        $completion = $this->courseCompletionReader->findById(
+            RequiredUuid::fromString($completionId)
+        );
+
+        if(!$completion) {
+            return new JsonResponse('invalid_completion_id', Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = new JsonResponse(
+            $completion->getDump()->value(), Response::HTTP_OK, [], true);
+
+        $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
+        return $response;
+    }
+    /**
      * @Route("/api/lti/ags/{courseId}/scores", methods={"POST", "GET"}, name="ags")
      */
     public function ags($courseId, Request $request): Response
     {
-        file_put_contents('test.txt', file_get_contents('php://input'));
+
+        $parametersAsArray = [];
+        if ($content = $request->getContent()) {
+            $parametersAsArray = json_decode($content, true);
+        }
+
+        if(!$parametersAsArray) {
+            return new JsonResponse('empty_data', Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->createCompletionHandler->handle(
+
+            new CreateCompletion(
+                $parametersAsArray['userId'],
+                $courseId,
+                $parametersAsArray['scoreGiven'],
+                $parametersAsArray['timestamp'],
+                $request->getContent(),
+            )
+        );
+
         return new JsonResponse([
             'id' => $courseId,
             'status'=> 'success'
@@ -184,15 +228,15 @@ class ApiController extends AbstractController
                 $this->authHelper->getUser()->getRole()->value()
             ],
             "https://purl.imsglobal.org/spec/lti/claim/resource_link" => [
-                "id" => RequiredUuid::generate()->value(),
+                "id" => $course->getId()->value(),
             ],
             "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint" => [
                 "scope" => [
                     "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
                     "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                    "https://purl.imsglobal.org/spec/lti-ags/scope/score"
+                    "https://purl.imsglobal.org/spec/lti-ags/scope/score",
                 ],
-                "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/c49988d8-4fe4-447c-a3d4-6d48e61028ea'
+                "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/' . $course->getId()->value()
             ],
             'https://purl.imsglobal.org/spec/lti/claim/custom' => [
                 'id' => 'c49988d8-4fe4-447c-a3d4-6d48e61028ea'

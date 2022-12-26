@@ -13,6 +13,8 @@
                 {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
+                {% else %}
+                <th scope="col">Status</th>
                 {% endif %}
             </tr>
             </thead>
@@ -21,10 +23,25 @@
                 <tr>
                     <th>{{ course.uuid }}</th>
                     <td class="w-50">{{ course.tool_name }}</td>
-                    <td><a href="/course/run/{{ course.uuid }}" class="btn btn-outline-secondary">Run</a></td>
+                    {% if course.is_completed == false %}
+                        <td><a href="/course/run/{{ course.uuid }}" class="btn btn-outline-secondary">Run</a></td>
+                    {% else %}
+                        <td><a href="/course/run/{{ course.uuid }}" class="btn btn-outline-secondary disabled">Run</a></td>
+                    {% endif %}
+
+
                     {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
                     <td><a href="/course/edit/{{ course.uuid }}" class="btn btn-outline-success">Edit</a></td>
                     <td><a href="/course/delete/{{ course.uuid }}" class="btn btn-outline-danger">Delete</a></td>
+                    {% else %}
+                        <td>
+                        {% if course.is_completed == false %}
+                            <button type="button" class="btn btn-secondary">Not completed</button>
+                        {% else %}
+                            <a href="{{ path('completion_info', {'completionId': course.completion_id|toString}) }}" target="_blank" class="btn btn-success">Completed</a>
+                        {% endif %}
+
+                        </td>
                     {% endif %}
 
                 </tr>
