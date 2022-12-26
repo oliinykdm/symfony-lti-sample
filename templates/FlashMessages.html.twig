@@ -1,0 +1,14 @@
+{% block flashmessages %}
+    <div class="py-3"></div>
+{% for message in app.flashes('errors') %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+{% endblock %}

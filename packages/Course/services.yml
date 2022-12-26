@@ -1,0 +1,19 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  # Services:
+  CourseHub\Course\Application\Create\CreateCourseHandler:
+  CourseHub\Course\Application\Create\CreateCourseTokenHandler:
+  CourseHub\Course\Application\Update\UpdateCourseHandler:
+  CourseHub\Course\Application\CourseValidator:
+  CourseHub\Course\Application\CourseWriter:
+    class: CourseHub\Course\Infrastructure\DbalCourseWriter
+  CourseHub\Course\Application\CourseReader:
+    class: CourseHub\Course\Infrastructure\DbalCourseReader
+  CourseHub\Course\Application\CourseTokenWriter:
+    class: CourseHub\Course\Infrastructure\DbalCourseTokenWriter
+  CourseHub\Course\Application\CourseTokenReader:
+    class: CourseHub\Course\Infrastructure\DbalCourseTokenReader

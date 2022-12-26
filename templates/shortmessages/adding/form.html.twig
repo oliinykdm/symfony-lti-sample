@@ -1,0 +1,19 @@
+<div style="padding: 10px;">
+
+    {% include 'FlashMessages.html.twig' %}
+    <form method="post" action="">
+        <textarea name="message_text" rows="10" cols="45"></textarea>
+        <input type="submit" />
+    </form>
+
+    {% for message in shortMessages %}
+        <div style="{% if message.uuid|binaryUuidToString == latestInsertId %}background: #ffb8fa;{% endif %}">
+            <span><b>ID</b>: [{{ message.id }}]</span>
+            <span><b>UUID</b>: [{{ message.uuid|binaryUuidToString }}]</span>
+            <span><b>Message</b>: [{{ message.message_text }}]</span>
+            <span><b>Author</b>: [{{ message.message_author }}]</span>
+            <span><b>Date</b>: [{{ message.message_date }}]</span>
+            <br />
+        </div>
+    {% endfor %}
+</div>

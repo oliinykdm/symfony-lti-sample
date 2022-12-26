@@ -1,0 +1,9 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    globals:
+        user: '@CourseHub\Common\Application\Auth\AuthHelper'
+
+when@test:
+    twig:
+        strict_variables: true
+

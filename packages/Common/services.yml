@@ -1,0 +1,10 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  CourseHub\Common\Application\Auth\AuthHandler:
+  CourseHub\Common\Application\Auth\AuthHelper:
+  CourseHub\Common\Application\Auth\UserReader:
+    class: CourseHub\Common\Infrastructure\Auth\DbalUserReader

@@ -1,0 +1,68 @@
+    {% extends 'base.html.twig' %}
+
+    {% block title %}Edit Course{% endblock %}
+
+    {% block body %}
+
+
+        <h2 class="pb-2 border-bottom">Edit Course</h2>
+        <form method="POST">
+            <h2 class="sub-header">Tool Data</h2>
+            <div class="mb-3">
+                <label for="tool-url" class="form-label">Course/Tool Name</label>
+                <input type="text" class="form-control" name="tool_name" id="tool-name" value="{{ course.toolName|toString }}">
+            </div>
+            <div class="mb-3">
+                <label for="tool-url" class="form-label">Tool URL</label>
+                <input type="url" class="form-control" name="tool_url" id="tool-url" value="{{ course.toolUrl|toString }}">
+            </div>
+            <div class="mb-3">
+                <label for="initiate-login-url" class="form-label">Initiate login URL</label>
+                <input type="url" class="form-control" name="initiate_login_url" id="initiate-login-url" value="{{ course.initiateLoginUrl|toString }}">
+            </div>
+            <div class="mb-3">
+                <label for="jwks-url" class="form-label">JWKS URL</label>
+                <input type="url" class="form-control" name="jwks_url" id="jwks-url" value="{{ course.jwksUrl|toString }}">
+            </div>
+            <div class="mb-3">
+                <label for="deep-linking-url" class="form-label">Deep linking URL</label>
+                <input type="url" class="form-control" name="deep_linking_url" id="deep-linking-url" value="{{ course.deepLinkingUrl|toString }}">
+            </div>
+
+
+            <h2 class="sub-header">Platform Data</h2>
+            <div class="mb-3">
+                <label for="platform-id" class="form-label">Platform ID (issuer)</label>
+                <input type="url" class="form-control" name="platform_id" id="platform-id" value="{{ app.request.getSchemeAndHttpHost() }}" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="client-id" class="form-label">Client ID</label>
+                <input type="url" class="form-control" name="client_id" id="client-id" value="{{ course.clientId|toString }}" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="deployment-id" class="form-label">Deployment ID</label>
+                <input type="url" class="form-control" name="deployment_id" id="deployment-id" value="{{ course.deploymentId|toString }}" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="public-keyset-url" class="form-label">Public keyset URL</label>
+                <input type="url" class="form-control" name="public_keyset_url" id="public-keyset-url" value="{{ app.request.getSchemeAndHttpHost() }}/api/lti/certs" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="access-token-url" class="form-label">Access token URL</label>
+                <input type="url" class="form-control" name="access_token_url" id="access-token-url" value="{{ app.request.getSchemeAndHttpHost() }}/api/lti/token" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label for="authentication-request-url" class="form-label">Authentication request URL</label>
+                <input type="url" class="form-control" name="authentication-request-url" id="authentication_request_url" value="{{ app.request.getSchemeAndHttpHost() }}/api/lti/auth" disabled>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Course</button>
+        </form>
+ <br /> <br /> <br />
+
+    {% endblock %}

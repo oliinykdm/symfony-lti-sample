@@ -1,0 +1,34 @@
+    {% extends 'base.html.twig' %}
+
+    {% block title %}Add new Course{% endblock %}
+
+    {% block body %}
+
+
+        <h2 class="pb-2 border-bottom">Add new Course</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="tool-url" class="form-label">Course/Tool Name</label>
+                <input type="text" class="form-control" name="tool_name" id="tool-name">
+            </div>
+            <div class="mb-3">
+                <label for="tool-url" class="form-label">Tool URL</label>
+                <input type="url" class="form-control" name="tool_url" id="tool-url">
+            </div>
+            <div class="mb-3">
+                <label for="initiate-login-url" class="form-label">Initiate login URL</label>
+                <input type="url" class="form-control" name="initiate_login_url" id="initiate-login-url">
+            </div>
+            <div class="mb-3">
+                <label for="jwks-url" class="form-label">JWKS URL</label>
+                <input type="url" class="form-control" name="jwks_url" id="jwks-url">
+            </div>
+            <div class="mb-3">
+                <label for="deep-linking-url" class="form-label">Deep linking URL</label>
+                <input type="url" class="form-control" name="deep_linking_url" id="deep-linking-url">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Course</button>
+        </form>
+
+
+    {% endblock %}

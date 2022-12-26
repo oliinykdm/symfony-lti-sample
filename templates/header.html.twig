@@ -1,0 +1,48 @@
+{% block header %}
+<main>
+    <header>
+        <div class="px-3 py-2 bg-easylearn text-white">
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                    <a href="{{ path('course_list') }}" class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-white text-decoration-none">
+                        <span class="fs-4">easylearn lti management</span>
+                    </a>
+
+                    <ul class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small">
+                        {% if user.user is not null and user.user is defined %}
+                            <li>
+                                <a href="{{ path('course_list') }}" class="nav-link text-white">
+                                    <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#home"/></svg>
+                                    Courses List
+                                </a>
+                            </li>
+                            {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
+                                <li>
+                                    <a href="/course/add" class="nav-link text-white">
+                                        <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#add-course"/></svg>
+                                        Add Course
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li>
+                                <a href="{{ path('logout') }}" class="nav-link text-white">
+                                    <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#logout"/></svg>
+                                    Logout ({{ user.user.login|toString }})
+                                </a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <a href="{{ path('login') }}" class="nav-link text-white">
+                                    <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#login"/></svg>
+                                    Login
+                                </a>
+                            </li>
+
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+</main>
+{% endblock %}
