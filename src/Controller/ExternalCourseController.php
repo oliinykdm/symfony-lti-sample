@@ -70,9 +70,9 @@ class ExternalCourseController extends AbstractController
     }
 
     /**
-     * @Route("/course/run/{uuid}", methods={"GET"})
+     * @Route("/course/run/{type}/{uuid}", methods={"GET"}, name="run")
      */
-    public function run($uuid): Response
+    public function run($type, $uuid): Response
     {
         if(is_null($this->authHelper->getUser())) {
             $this->addFlash('errors', 'You must be logged in to perform this action!');
@@ -82,9 +82,11 @@ class ExternalCourseController extends AbstractController
             'course' => $this->courseReader->findById(RequiredUuid::fromString($uuid)),
             'ltiMessageHint' => json_encode([
                 'launchid' => md5('elch' . time())
-            ])
+            ]),
+            'ltiLoginHint' => $type,
         ]);
     }
+
     /**
      * @Route("/course/edit/{uuid}", methods={"GET"})
      */

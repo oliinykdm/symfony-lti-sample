@@ -24,9 +24,9 @@
                     <th>{{ course.uuid }}</th>
                     <td class="w-50">{{ course.tool_name }}</td>
                     {% if course.is_completed == false %}
-                        <td><a href="/course/run/{{ course.uuid }}" class="btn btn-outline-secondary">Run</a></td>
+                        <td><a href="{{ path('run', {'type': 'LtiResourceLinkRequest', 'uuid': course.uuid}) }}" class="btn btn-outline-secondary">Run</a></td>
                     {% else %}
-                        <td><a href="/course/run/{{ course.uuid }}" class="btn btn-outline-secondary disabled">Run</a></td>
+                        <td><button class="btn btn-outline-secondary disabled">Run</button></td>
                     {% endif %}
 
 
