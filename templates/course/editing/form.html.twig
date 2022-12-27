@@ -10,6 +10,10 @@
             $( document ).ready(function() {
                 let searchParams = new URLSearchParams(window.location.search);
                 $('#' + searchParams.get('tab')).click();
+                $('#add_resource_button').on('click', function(e) {
+                    $('#add_resource_form').toggleClass("d-none"); //you can list several class names
+                    e.preventDefault();
+                });
             });
         </script>
 
@@ -82,9 +86,37 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="resources-tab" role="tabpanel" aria-labelledby="nav-resources">
-                <p><a href="{{ path('deeplinkLaunch', {'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary btn-lg">Choose Resources</a></p>
+                <p><a href="{{ path('deeplinkLaunch', {'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary btn-lg">Choose Resources</a>
+                    <button class="btn btn-outline-primary btn-lg" id="add_resource_button">Add Resource</button></p>
+
+                <br />
 
 
+                <div class="card text-left d-none" id="add_resource_form">
+                    <div class="card-header">
+                        Please fill in the form according to the information from the tool
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ path('add_resource', {'courseId': course.id|toString}) }}" method="POST">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Resource Id</span>
+                                </div>
+                                <input type="text" class="form-control" name="resource_id" placeholder="Resource Id" value="">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Title</span>
+                                </div>
+                                <input type="text" class="form-control" name="title" placeholder="Title" value="">
+                            </div>
+                            <p class="card-text">
+                                <textarea class="form-control" name="text" placeholder="Description"></textarea>
+                            </p>
+                            <button name="type" class="btn btn-success" value="save">Add Resource</button>
+                        </form>
+                    </div>
+                </div>
 
                 {% for resource in resources %}
                     <br />
@@ -114,6 +146,9 @@
                             <button name="type" class="btn btn-success" value="save">Save changes</button>
                             <a href="{{ path('start', {'type': 'LtiResourceLinkRequest', 'uuid': resource.uuid|toString}) }}" class="btn btn-primary" target="_blank">Run Resource</a>
                                 <a href="{{ path('delete_resource', {'uuid': resource.uuid|toString, 'courseId': course.id|toString}) }}" class="btn btn-danger" target="_blank">Delete</a>
+                                {% if resource.dump|toString is not empty %}
+                                <a href="{{ path('resource_info', {'resourceId': resource.id|toString}) }}" class="btn btn-warning" target="_blank">Dump</a>
+                                {% endif %}
                             </form>
                         </div>
                     </div>

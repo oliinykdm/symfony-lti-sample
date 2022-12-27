@@ -7,6 +7,7 @@ use CourseHub\Common\Domain\Jwks;
 use CourseHub\Common\Domain\Types\RequiredUuid;
 use CourseHub\Course\Application\CourseCompletionReader;
 use CourseHub\Course\Application\CourseReader;
+use CourseHub\Course\Application\CourseResourceReader;
 use CourseHub\Course\Application\CourseResourceWriter;
 use CourseHub\Course\Application\CourseTokenReader;
 use CourseHub\Course\Application\Create\CreateCompletion;
@@ -31,6 +32,7 @@ class ApiController extends AbstractController
         private CreateCompletionHandler $createCompletionHandler,
         private CourseCompletionReader $courseCompletionReader,
         private CreateCourseResourceHandler $createCourseResourceHandler,
+        private CourseResourceReader $courseResourceReader
     ) {}
     /**
      * @Route("/api/lti/certs", methods={"GET"}, name="certs")
@@ -126,6 +128,25 @@ class ApiController extends AbstractController
             'expires_in' => time() * 2,
             'scope' => ''
         ], Response::HTTP_OK);
+
+        $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
+        return $response;
+    }
+    /**
+     * @Route("/api/lti/resource-info/{resourceId}", methods={"POST", "GET"}, name="resource_info")
+     */
+    public function resourceInfo($resourceId): JsonResponse
+    {
+        $resource = $this->courseResourceReader->findById(
+            RequiredUuid::fromString($resourceId)
+        );
+
+        if(!$resource) {
+            return new JsonResponse('invalid_resource_id', Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = new JsonResponse(
+            $resource->getDump()->value(), Response::HTTP_OK, [], true);
 
         $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
         return $response;

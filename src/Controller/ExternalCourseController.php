@@ -14,6 +14,8 @@ use CourseHub\Course\Application\CourseValidator;
 use CourseHub\Course\Application\CourseWriter;
 use CourseHub\Course\Application\Create\CreateCourse;
 use CourseHub\Course\Application\Create\CreateCourseHandler;
+use CourseHub\Course\Application\Create\CreateCourseResource;
+use CourseHub\Course\Application\Create\CreateCourseResourceHandler;
 use CourseHub\Course\Application\Update\UpdateCourse;
 use CourseHub\Course\Application\Update\UpdateCourseHandler;
 use CourseHub\Course\Application\Update\UpdateCourseResource;
@@ -27,6 +29,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ExternalCourseController extends AbstractController
 {
     public function __construct(
+        private CreateCourseResourceHandler $createCourseResourceHandler,
         private CreateCourseHandler $createCourseHandler,
         private UpdateCourseHandler $updateCourseHandler,
         private UpdateCourseResourceHandler $updateCourseResourceHandler,
@@ -196,8 +199,33 @@ class ExternalCourseController extends AbstractController
                 return $this->redirectToRoute('edit', array('uuid' => $uuid, 'tab' => 'resources'));
                 break;
         }
-
+        return new Response();
     }
+
+    /**
+     * @Route("/course/add/resource/{courseId}", methods={"POST"}, name="add_resource")
+     */
+    public function createResource(Request $request, $courseId): Response
+    {
+        $this->createCourseResourceHandler->handle(
+            new CreateCourseResource(
+                $courseId,
+                'ltiResourceLink',
+                $request->get('title'),
+                $request->get('text'),
+                '',
+                $request->get('resource_id'),
+                '',
+            )
+        );
+
+
+        $this->addFlash('success', 'Your resource was successfully created!');
+        return $this->redirectToRoute('edit', array('uuid' => $courseId, 'tab' => 'resources'));
+    }
+
+
+
     /**
      * @Route("/course/delete/resource/{uuid}/{courseId}", methods={"GET"}, name="delete_resource")
      */
