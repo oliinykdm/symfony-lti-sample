@@ -7,10 +7,14 @@ use CourseHub\Common\Domain\Jwks;
 use CourseHub\Common\Domain\Types\RequiredUuid;
 use CourseHub\Course\Application\CourseCompletionReader;
 use CourseHub\Course\Application\CourseReader;
+use CourseHub\Course\Application\CourseResourceWriter;
 use CourseHub\Course\Application\CourseTokenReader;
 use CourseHub\Course\Application\Create\CreateCompletion;
 use CourseHub\Course\Application\Create\CreateCompletionHandler;
+use CourseHub\Course\Application\Create\CreateCourseResource;
+use CourseHub\Course\Application\Create\CreateCourseResourceHandler;
 use Firebase\JWT\JWK;
+use Firebase\JWT\Key;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +30,7 @@ class ApiController extends AbstractController
         private AuthHelper $authHelper,
         private CreateCompletionHandler $createCompletionHandler,
         private CourseCompletionReader $courseCompletionReader,
+        private CreateCourseResourceHandler $createCourseResourceHandler,
     ) {}
     /**
      * @Route("/api/lti/certs", methods={"GET"}, name="certs")
@@ -145,9 +150,9 @@ class ApiController extends AbstractController
         return $response;
     }
     /**
-     * @Route("/api/lti/ags/{courseId}/scores", methods={"POST", "GET"}, name="ags")
+     * @Route("/api/lti/ags/{resourceId}/scores", methods={"POST", "GET"}, name="ags")
      */
-    public function ags($courseId, Request $request): Response
+    public function ags($resourceId, Request $request): Response
     {
 
         $parametersAsArray = [];
@@ -163,7 +168,7 @@ class ApiController extends AbstractController
 
             new CreateCompletion(
                 $parametersAsArray['userId'],
-                $courseId,
+                $resourceId,
                 $parametersAsArray['scoreGiven'],
                 $parametersAsArray['timestamp'],
                 $request->getContent(),
@@ -171,7 +176,7 @@ class ApiController extends AbstractController
         );
 
         return new JsonResponse([
-            'id' => $courseId,
+            'id' => $resourceId,
             'status'=> 'success'
         ], Response::HTTP_OK);
     }
@@ -192,10 +197,10 @@ class ApiController extends AbstractController
             return new JsonResponse('bad_request', Response::HTTP_BAD_REQUEST);
         }
 
-        $ltiMessageHint = json_decode($request->get('lti_message_hint'));
+        $ltiMessageHint = $request->get('lti_message_hint');
 
-        if(!isset($ltiMessageHint->launchid)) {
-            return new JsonResponse('no_launch_id', Response::HTTP_BAD_REQUEST);
+        if(!is_null($ltiMessageHint)) {
+            $ltiMessageHint = json_decode($ltiMessageHint, true);
         }
 
         if($request->get('scope') !== 'openid') {
@@ -225,7 +230,7 @@ class ApiController extends AbstractController
                     "nonce" => $request->get('nonce'),
 
                     "https://purl.imsglobal.org/spec/lti/claim/deployment_id" => $course->getDeploymentId()->value(),
-                    "https://purl.imsglobal.org/spec/lti/claim/message_type" => "LtiResourceLinkRequest",
+                    "https://purl.imsglobal.org/spec/lti/claim/message_type" => $ltiLoginHint,
                     "https://purl.imsglobal.org/spec/lti/claim/version" => "1.3.0",
                     "https://purl.imsglobal.org/spec/lti/claim/target_link_uri" => $course->getToolUrl()->value(),
                     "https://purl.imsglobal.org/spec/lti/claim/roles" => [
@@ -240,10 +245,10 @@ class ApiController extends AbstractController
                             "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
                             "https://purl.imsglobal.org/spec/lti-ags/scope/score",
                         ],
-                        "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/' . $course->getId()->value()
+                        "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/' . $ltiMessageHint['internalResourceId']
                     ],
                     'https://purl.imsglobal.org/spec/lti/claim/custom' => [
-                        'id' => 'c49988d8-4fe4-447c-a3d4-6d48e61028ea'
+                        'id' => $ltiMessageHint['resourceId']
                     ]
                 ];
                 break;
@@ -257,32 +262,19 @@ class ApiController extends AbstractController
                     "nonce" => $request->get('nonce'),
 
                     "https://purl.imsglobal.org/spec/lti/claim/deployment_id" => $course->getDeploymentId()->value(),
-                    "https://purl.imsglobal.org/spec/lti/claim/message_type" => "LtiDeepLinkingRequest",
+                    "https://purl.imsglobal.org/spec/lti/claim/message_type" => $ltiLoginHint,
                     "https://purl.imsglobal.org/spec/lti/claim/version" => "1.3.0",
                     "https://purl.imsglobal.org/spec/lti/claim/target_link_uri" => $course->getDeepLinkingUrl()->value(),
                     "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings" =>
                         [
-                            'deep_link_return_url' => $request->getSchemeAndHttpHost() . '/api/lti/dl/',
+                            'deep_link_return_url' => $request->getSchemeAndHttpHost() . '/api/lti/deeplink/' . $course->getId()->value(),
                             'accept_types' => ['ltiResourceLink'],
                             'accept_presentation_document_targets' => ["iframe", "window", "embed"],
                         ],
                     "https://purl.imsglobal.org/spec/lti/claim/roles" => [
                         $this->authHelper->getUser()->getRole()->value()
                     ],
-                    "https://purl.imsglobal.org/spec/lti/claim/resource_link" => [
-                        "id" => $course->getId()->value(),
-                    ],
-                    "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint" => [
-                        "scope" => [
-                            "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
-                            "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                            "https://purl.imsglobal.org/spec/lti-ags/scope/score",
-                        ],
-                        "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/' . $course->getId()->value()
-                    ],
-                    'https://purl.imsglobal.org/spec/lti/claim/custom' => [
-                        'id' => 'c49988d8-4fe4-447c-a3d4-6d48e61028ea'
-                    ]
+
                 ];
                 break;
         }
@@ -292,8 +284,7 @@ class ApiController extends AbstractController
         $jwt = JWT::encode($payload, Jwks::getPrivateKey()['key'], 'RS256', Jwks::getPrivateKey()['kid']);
         $params['id_token'] = $jwt;
         $params['state'] = $request->get('state');
-        $txt = $request->request->all();
-        $myfile = file_put_contents('logs.txt', json_encode($_REQUEST).PHP_EOL , FILE_APPEND | LOCK_EX);
+
         return $this->render('course/auth.html.twig', [
             'params' => $params,
             'redirect_uri' => $request->get('redirect_uri'),
@@ -301,88 +292,51 @@ class ApiController extends AbstractController
 
     }
     /**
-     * @Route("/api/lti/deeplink", methods={"POST", "GET"}, name="deeplink")
+     * @Route("/api/lti/deeplink/{courseId}", methods={"POST", "GET"}, name="deeplink")
      */
-    public function deepLink(Request $request): Response
+    public function deepLink($courseId, Request $request): Response
     {
 
-        if(!$request->get('scope')
-            || !$request->get('response_type')
-            || !$request->get('client_id')
-            || !$request->get('redirect_uri')
-            || !$request->get('login_hint')
-            || !$request->get('nonce')
-        )
-        {
+        if(!$request->get('JWT')) {
             return new JsonResponse('bad_request', Response::HTTP_BAD_REQUEST);
         }
 
-        $ltiMessageHint = json_decode($request->get('lti_message_hint'));
-
-
-        if(!isset($ltiMessageHint->launchid)) {
-            return new JsonResponse('no_launch_id', Response::HTTP_BAD_REQUEST);
-        }
-
-        if($request->get('scope') !== 'openid') {
-            return new JsonResponse('invalid_scope', Response::HTTP_BAD_REQUEST);
-        }
-
-        if($request->get('response_type') !== 'id_token') {
-            return new JsonResponse('unsupported_response_type', Response::HTTP_BAD_REQUEST);
-        }
-
-        $course = $this->courseReader->findByClientId(RequiredUuid::fromString($request->get('client_id')));
+        $course = $this->courseReader->findById(RequiredUuid::fromString($courseId));
 
         if(!$course) {
-            return new JsonResponse('course_not_found', Response::HTTP_BAD_REQUEST);
+            return new JsonResponse('invalid_course', Response::HTTP_BAD_REQUEST);
+        }
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );
+        $keySet = file_get_contents($course->getJwksUrl()->value(), false, stream_context_create($arrContextOptions));
+        $keySetArr = json_decode($keySet, true);
+
+        $keys = JWK::parseKeySet($keySetArr);
+        $data = JWT::decode($request->get('JWT'), $keys);
+        $contentItems = 'https://purl.imsglobal.org/spec/lti-dl/claim/content_items';
+        $resources = $data->{$contentItems};
+
+        foreach($resources as $resource) {
+            $this->createCourseResourceHandler->handle(
+              new CreateCourseResource(
+                  $courseId,
+                  $resource->type,
+                  $resource->title ?? '',
+                  $resource->text ?? '',
+                  $resource->url,
+                  $resource->custom->id,
+                  json_encode($resource),
+              )
+            );
         }
 
-        $payload = [
-            "iss" => $request->getSchemeAndHttpHost(),
-            "aud" => [$course->getClientId()->value()],
-            "sub" => $this->authHelper->getUser()->getId()->value(),
-            "exp" => time() + 600,
-            "iat" => time(),
-            "nonce" => $request->get('nonce'),
 
-            "https://purl.imsglobal.org/spec/lti/claim/deployment_id" => $course->getDeploymentId()->value(),
-            "https://purl.imsglobal.org/spec/lti/claim/message_type" => "LtiDeepLinkingRequest",
-            "https://purl.imsglobal.org/spec/lti/claim/version" => "1.3.0",
-            "https://purl.imsglobal.org/spec/lti/claim/target_link_uri" => $course->getDeepLinkingUrl()->value(),
-            "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings" =>
-                [
-                    'deep_link_return_url' => $request->getSchemeAndHttpHost() . '/api/lti/dl/',
-                    'accept_types' => '',
-                    'accept_presentation_document_targets' => '',
-                ],
-            "https://purl.imsglobal.org/spec/lti/claim/roles" => [
-                $this->authHelper->getUser()->getRole()->value()
-            ],
-            "https://purl.imsglobal.org/spec/lti/claim/resource_link" => [
-                "id" => $course->getId()->value(),
-            ],
-            "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint" => [
-                "scope" => [
-                    "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
-                    "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                    "https://purl.imsglobal.org/spec/lti-ags/scope/score",
-                ],
-                "lineitem" => $request->getSchemeAndHttpHost() . '/api/lti/ags/' . $course->getId()->value()
-            ],
-            'https://purl.imsglobal.org/spec/lti/claim/custom' => [
-                'id' => 'c49988d8-4fe4-447c-a3d4-6d48e61028ea'
-            ]
-        ];
-
-        $jwt = JWT::encode($payload, Jwks::getPrivateKey()['key'], 'RS256', Jwks::getPrivateKey()['kid']);
-        $params['id_token'] = $jwt;
-        $params['state'] = $request->get('state');
-
-        return $this->render('course/auth.html.twig', [
-            'params' => $params,
-            'redirect_uri' => $request->get('redirect_uri'),
-        ]);
+       return $this->redirectToRoute('edit', array('uuid' => $courseId, 'tab' => 'resources'));
 
     }
 }
+

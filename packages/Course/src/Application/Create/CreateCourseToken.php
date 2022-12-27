@@ -8,7 +8,6 @@ use CourseHub\Common\Domain\Types\RequiredUuid;
 final class CreateCourseToken
 {
     public function __construct(
-        private string $uuid,
         private string $courseId,
         private string $scope,
         private string $token,
@@ -16,11 +15,6 @@ final class CreateCourseToken
         private string $validTo,
         private string $lastAccess,
     ) {}
-
-    public function getId(): RequiredUuid
-    {
-        return RequiredUuid::fromString($this->uuid);
-    }
 
     public function getCourseId(): RequiredUuid
     {

@@ -7,9 +7,12 @@ services:
   # Services:
   CourseHub\Course\Application\Create\CreateCourseHandler:
   CourseHub\Course\Application\Create\CreateCourseTokenHandler:
+  CourseHub\Course\Application\Create\CreateCourseResourceHandler:
   CourseHub\Course\Application\Create\CreateCompletionHandler:
   CourseHub\Course\Application\Update\UpdateCourseHandler:
+  CourseHub\Course\Application\Update\UpdateCourseResourceHandler:
   CourseHub\Course\Application\CourseValidator:
+  CourseHub\Course\Application\CourseResourceValidator:
   CourseHub\Course\Application\CourseWriter:
     class: CourseHub\Course\Infrastructure\DbalCourseWriter
   CourseHub\Course\Application\CourseReader:
@@ -22,3 +25,7 @@ services:
     class: CourseHub\Course\Infrastructure\DbalCourseCompletionWriter
   CourseHub\Course\Application\CourseCompletionReader:
     class: CourseHub\Course\Infrastructure\DbalCourseCompletionReader
+  CourseHub\Course\Application\CourseResourceWriter:
+    class: CourseHub\Course\Infrastructure\DbalCourseResourceWriter
+  CourseHub\Course\Application\CourseResourceReader:
+    class: CourseHub\Course\Infrastructure\DbalCourseResourceReader

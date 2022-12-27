@@ -6,19 +6,24 @@
 
 
         <h2 class="pb-2 border-bottom">Edit Course</h2>
-
+        <script>
+            $( document ).ready(function() {
+                let searchParams = new URLSearchParams(window.location.search);
+                $('#' + searchParams.get('tab')).click();
+            });
+        </script>
 
         <br />
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Tool Data</button>
-                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Platform Data</button>
-                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Courses/Resources</button>
+                <button class="nav-link active" id="tool-data" data-bs-toggle="tab" data-bs-target="#tool-data-tab" type="button" role="tab" aria-controls="nav-tool-data" aria-selected="true">Tool Data</button>
+                <button class="nav-link" id="platform-data" data-bs-toggle="tab" data-bs-target="#platform-data-tab" type="button" role="tab" aria-controls="nav-platform-data" aria-selected="false">Platform Data</button>
+                <button class="nav-link" id="resources" data-bs-toggle="tab" data-bs-target="#resources-tab" type="button" role="tab" aria-controls="nav-resources" aria-selected="false">Resources</button>
             </div>
         </nav>
         <br />
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <div class="tab-pane fade show active" id="tool-data-tab" role="tabpanel" aria-labelledby="nav-tool-data">
                 <form method="POST">
                 <div class="mb-3">
                     <label for="tool-url" class="form-label">Course/Tool Name</label>
@@ -40,11 +45,11 @@
                     <label for="deep-linking-url" class="form-label">Deep linking URL</label>
                     <input type="url" class="form-control" name="deep_linking_url" id="deep-linking-url" value="{{ course.deepLinkingUrl|toString }}">
                 </div>
-
+                    <input type="hidden" name="action" value="update_tool_data">
                     <button type="submit" class="btn btn-primary">Save settings</button>
                 </form>
             </div>
-            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <div class="tab-pane fade" id="platform-data-tab" role="tabpanel" aria-labelledby="nav-platform-data">
 
                 <div class="mb-3">
                     <label for="platform-id" class="form-label">Platform ID (issuer)</label>
@@ -76,8 +81,48 @@
                     <input type="url" class="form-control" name="authentication-request-url" id="authentication_request_url" value="{{ app.request.getSchemeAndHttpHost() }}/api/lti/auth" disabled>
                 </div>
             </div>
-            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                <a href="{{ path('run', {'type': 'LtiDeepLinkingRequest', 'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary">Choose Resource</a>
+            <div class="tab-pane fade" id="resources-tab" role="tabpanel" aria-labelledby="nav-resources">
+                <p><a href="{{ path('deeplinkLaunch', {'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary btn-lg">Choose Resources</a></p>
+
+
+
+                {% for resource in resources %}
+                    <br />
+                    <div class="card text-left">
+                        <div class="card-header">
+                            {{ resource.uuid|toString }}
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ path('edit', {'uuid': course.id|toString, 'tab': 'resources'}) }}" method="POST">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Resource Id</span>
+                                </div>
+                                <input type="text" class="form-control" name="resource_id" placeholder="Resource Id" value="{{ resource.resourceId|toString }}">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Title</span>
+                                </div>
+                                <input type="text" class="form-control" name="title" placeholder="Title" value="{{ resource.title|toString }}">
+                            </div>
+                                <input type="hidden" name="action" value="update_resource">
+                                <input type="hidden" name="resource_uuid" value="{{ resource.uuid|toString }}">
+                            <p class="card-text">
+                                <textarea class="form-control" name="text" placeholder="Description">{{ resource.text|toString }}</textarea>
+                            </p>
+                            <button name="type" class="btn btn-success" value="save">Save changes</button>
+                            <a href="{{ path('start', {'type': 'LtiResourceLinkRequest', 'uuid': resource.uuid|toString}) }}" class="btn btn-primary" target="_blank">Run Resource</a>
+                                <a href="{{ path('delete_resource', {'uuid': resource.uuid|toString, 'courseId': course.id|toString}) }}" class="btn btn-danger" target="_blank">Delete</a>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+
+
+
             </div>
         </div>
 

@@ -5,9 +5,9 @@
     {% endif %}
     {% if ltiLoginHint == 'LtiResourceLinkRequest' %}
         <input type="hidden" name="target_link_uri" value="{{ course.toolUrl|toString }}"/>
+        <input type="hidden" name="lti_message_hint" value="{{ ltiMessageHint }}"/>
     {% endif %}
     <input type="hidden" name="login_hint" value="{{ ltiLoginHint }}"/>
-    <input type="hidden" name="lti_message_hint" value="{{ ltiMessageHint }}"/>
     <input type="hidden" name="client_id" value="{{ course.clientId|toString }}"/>
     <input type="hidden" name="lti_deployment_id" value="{{ course.deploymentId|toString }}"/>
 </form>

@@ -3,17 +3,21 @@
     {% block title %}Courses list{% endblock %}
 
     {% block body %}
-        <h2 class="pb-2 border-bottom">Courses List</h2>
+        {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
+            <h2 class="pb-2 border-bottom">Integrations</h2>
+        {% else %}
+            <h2 class="pb-2 border-bottom">Courses</h2>
+        {% endif %}
         <table class="table table-striped table-hover">
             <thead>
             <tr>
                 <th scope="col">UUID</th>
                 <th scope="col">Tool Name</th>
-                <th scope="col">Run</th>
                 {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
                 <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
                 {% else %}
+                    <th scope="col">Start</th>
                 <th scope="col">Status</th>
                 {% endif %}
             </tr>
@@ -23,17 +27,16 @@
                 <tr>
                     <th>{{ course.uuid }}</th>
                     <td class="w-50">{{ course.tool_name }}</td>
-                    {% if course.is_completed == false %}
-                        <td><a href="{{ path('run', {'type': 'LtiResourceLinkRequest', 'uuid': course.uuid}) }}" class="btn btn-outline-secondary">Run</a></td>
-                    {% else %}
-                        <td><button class="btn btn-outline-secondary disabled">Run</button></td>
-                    {% endif %}
-
 
                     {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
                     <td><a href="/course/edit/{{ course.uuid }}" class="btn btn-outline-success">Edit</a></td>
                     <td><a href="/course/delete/{{ course.uuid }}" class="btn btn-outline-danger">Delete</a></td>
                     {% else %}
+                        {% if course.is_completed == false %}
+                            <td><a href="{{ path('start', {'type': 'LtiResourceLinkRequest', 'uuid': course.uuid}) }}" class="btn btn-outline-secondary">Start</a></td>
+                        {% else %}
+                            <td><button class="btn btn-outline-secondary disabled">Start</button></td>
+                        {% endif %}
                         <td>
                         {% if course.is_completed == false %}
                             <button type="button" class="btn btn-secondary">Not completed</button>
