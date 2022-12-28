@@ -20,9 +20,8 @@ final class CreateCourseHandler
 
     public function handle(CreateCourse $command): bool
     {
-        $courseId = RequiredUuid::generate();
         $courseToSave = Course::generate(
-            $courseId,
+            $command->getId(),
             $command->getToolName(),
             $command->getToolUrl(),
             $command->getInitiateLoginUrl(),
@@ -42,7 +41,7 @@ final class CreateCourseHandler
             $this->createCourseTokenHandler->handle(
                 new CreateCourseToken(
                     RequiredUuid::generate()->value(),
-                    $courseId->value(),
+                    $command->getId()->value(),
                     '',
                     RequiredUuid::generate()->value(),
                     '',

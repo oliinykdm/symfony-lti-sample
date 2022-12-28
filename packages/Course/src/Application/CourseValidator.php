@@ -15,7 +15,6 @@ final class CourseValidator extends Validator
         $this->validateToolUrlNotEmpty($command->getToolUrl()->value());
         $this->validateInitiateLoginUrlNotEmpty($command->getInitiateLoginUrl()->value());
         $this->validateJwksUrlNotEmpty($command->getJwksUrl()->value());
-        $this->validateDeepLinkingUrlNotEmpty($command->getDeepLinkingUrl()->value());
 
     }
 
@@ -25,13 +24,12 @@ final class CourseValidator extends Validator
         $this->validateToolUrlNotEmpty($command->getToolUrl()->value());
         $this->validateInitiateLoginUrlNotEmpty($command->getInitiateLoginUrl()->value());
         $this->validateJwksUrlNotEmpty($command->getJwksUrl()->value());
-        $this->validateDeepLinkingUrlNotEmpty($command->getDeepLinkingUrl()->value());
 
     }
 
-    public function validateToolNameNotEmpty($text): bool
+    public function validateToolNameNotEmpty($value): bool
     {
-        if(strlen($text) < 1 || strlen($text) > 200) {
+        if(strlen($value) < 1 || strlen($value) > 200) {
             $this->addMessage(Message::fromString('Tool Name must be between 1 and 200 characters'));
             return false;
         }
@@ -40,9 +38,9 @@ final class CourseValidator extends Validator
         }
     }
 
-    public function validateToolUrlNotEmpty($text): bool
+    public function validateToolUrlNotEmpty($value): bool
     {
-        if(strlen($text) < 1 || strlen($text) > 200) {
+        if(strlen($value) < 1 || strlen($value) > 200) {
             $this->addMessage(Message::fromString('Tool Url must be between 1 and 200 characters'));
             return false;
         }
@@ -51,9 +49,9 @@ final class CourseValidator extends Validator
         }
     }
 
-    public function validateInitiateLoginUrlNotEmpty($text): bool
+    public function validateInitiateLoginUrlNotEmpty($value): bool
     {
-        if(strlen($text) < 1 || strlen($text) > 200) {
+        if(strlen($value) < 1 || strlen($value) > 200) {
             $this->addMessage(Message::fromString('Initiate Login Url must be between 1 and 200 characters'));
             return false;
         }
@@ -62,21 +60,10 @@ final class CourseValidator extends Validator
         }
     }
 
-    public function validateJwksUrlNotEmpty($text): bool
+    public function validateJwksUrlNotEmpty($value): bool
     {
-        if(strlen($text) < 1 || strlen($text) > 200) {
+        if(strlen($value) < 1 || strlen($value) > 200) {
             $this->addMessage(Message::fromString('JWKS Url must be between 1 and 200 characters'));
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-
-    public function validateDeepLinkingUrlNotEmpty($text): bool
-    {
-        if(strlen($text) < 1 || strlen($text) > 200) {
-            $this->addMessage(Message::fromString('Deep Linking Url must be between 1 and 200 characters'));
             return false;
         }
         else {

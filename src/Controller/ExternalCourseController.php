@@ -3,6 +3,7 @@
 namespace CourseHub\Controller;
 
 use CourseHub\Common\Application\Auth\AuthHelper;
+use CourseHub\Common\Domain\Jwks;
 use CourseHub\Common\Domain\LtiSettings;
 use CourseHub\Common\Domain\Types\RequiredUuid;
 use CourseHub\Course\Application\CourseCompletionReader;
@@ -20,11 +21,15 @@ use CourseHub\Course\Application\Update\UpdateCourse;
 use CourseHub\Course\Application\Update\UpdateCourseHandler;
 use CourseHub\Course\Application\Update\UpdateCourseResource;
 use CourseHub\Course\Application\Update\UpdateCourseResourceHandler;
+use Firebase\JWT\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ExternalCourseController extends AbstractController
 {
@@ -41,6 +46,7 @@ class ExternalCourseController extends AbstractController
         private AuthHelper $authHelper,
         private CourseCompletionReader $courseCompletionReader,
         private CourseResourceReader $courseResourceReader,
+        private HttpClientInterface $client
     ) {}
     /**
      * @Route("/course/list", methods={"GET"}, name="course_list")
@@ -155,6 +161,14 @@ class ExternalCourseController extends AbstractController
         }
         switch($request->get('action')) {
             case 'update_tool_data':
+
+                if($request->get('enable_deep_linking')) {
+                    $deepLinkingUrl = $request->get('deep_linking_url');
+                }
+                else {
+                    $deepLinkingUrl = '';
+                }
+
                 $this->updateCourseHandler->handle(
                     new UpdateCourse(
                         $uuid,
@@ -162,7 +176,7 @@ class ExternalCourseController extends AbstractController
                         $request->get('tool_url'),
                         $request->get('initiate_login_url'),
                         $request->get('jwks_url'),
-                        $request->get('deep_linking_url'),
+                        $deepLinkingUrl,
                     )
                 );
 
@@ -261,8 +275,46 @@ class ExternalCourseController extends AbstractController
             $this->addFlash('errors', 'You must be logged in to perform this action!');
             return $this->redirectToRoute('login', array());
         }
+
+        if($request->get('enable_dynamic_registration')) {
+            $dynamicRegistrationUrl = $request->get('dynamic_registration_url');
+
+            if(!empty($dynamicRegistrationUrl)) {
+                $newCourseId = RequiredUuid::generate()->value();
+                $this->createCourseHandler->handle(
+                    new CreateCourse(
+                        $newCourseId,
+                        'filled_by_dynamic_registration',
+                        'filled_by_dynamic_registration',
+                        'filled_by_dynamic_registration',
+                        'filled_by_dynamic_registration',
+                        'filled_by_dynamic_registration',
+                    )
+                );
+                $getNewCourse = $this->courseReader->findById(RequiredUuid::fromString($newCourseId));
+                $token = [
+                    "sub" => $getNewCourse->getClientId()->value(),
+                    "scope" => 'reg',
+                    "iat" => time(),
+                    "exp" => time() + 3600
+                ];
+                $privateKey = Jwks::getPrivateKey();
+                $registrationToken = JWT::encode($token, $privateKey['key'], 'RS256', $privateKey['kid']);
+                $params['openid_configuration'] = $this->generateUrl('openid-registration', array('courseId' => $newCourseId), UrlGeneratorInterface::ABSOLUTE_URL);
+                $params['registration_token'] = $registrationToken;
+
+                return $this->render('course/dynamic-registration.html.twig', [
+                    'params' => $params,
+                    'redirect_uri' => $dynamicRegistrationUrl,
+                ]);
+
+            }
+        }
+
+
         $this->createCourseHandler->handle(
             new CreateCourse(
+                RequiredUuid::generate()->value(),
                 $request->get('tool_name'),
                 $request->get('tool_url'),
                 $request->get('initiate_login_url'),

@@ -1,0 +1,10 @@
+<form action="{{ redirect_uri }}" name="ltiAuthForm" id="ltiAuthForm" method="post" enctype="application/x-www-form-urlencoded">
+    {% for key, value in params %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}"/>
+    {% endfor %}
+</form>
+<script type="text/javascript">
+    //<![CDATA[
+    document.ltiAuthForm.submit();
+    //]]>
+</script>

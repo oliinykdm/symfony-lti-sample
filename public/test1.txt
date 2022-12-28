@@ -1,0 +1,1 @@
+{"type":"LtiDeepLinkingRequest","allowLearner":false,"target_link_uri":"http:\/\/moodle.local:8080\/enrol\/lti\/launch_deeplink.php","label":"Add content from ELCH Test","placements":["ContentArea"]}

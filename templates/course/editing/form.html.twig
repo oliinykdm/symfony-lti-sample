@@ -14,6 +14,9 @@
                     $('#add_resource_form').toggleClass("d-none"); //you can list several class names
                     e.preventDefault();
                 });
+                $('#enable-deep-linking').on('click', function(e) {
+                    $('#deep-linking-field').toggleClass("d-none"); //you can list several class names
+                });
             });
         </script>
 
@@ -46,6 +49,14 @@
                     <input type="url" class="form-control" name="jwks_url" id="jwks-url" value="{{ course.jwksUrl|toString }}">
                 </div>
                 <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enable_deep_linking" value="1" id="enable-deep-linking" {% if course.deepLinkingUrl|toString is not empty %}checked="checked"{% endif %}>
+                            <label class="form-check-label" for="enable-deep-linking">
+                                Enable DeepLinking
+                            </label>
+                        </div>
+                </div>
+                <div class="mb-3 {% if course.deepLinkingUrl|toString is empty %}d-none{% endif %}" id="deep-linking-field">
                     <label for="deep-linking-url" class="form-label">Deep linking URL</label>
                     <input type="url" class="form-control" name="deep_linking_url" id="deep-linking-url" value="{{ course.deepLinkingUrl|toString }}">
                 </div>
@@ -86,11 +97,14 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="resources-tab" role="tabpanel" aria-labelledby="nav-resources">
-                <p><a href="{{ path('deeplinkLaunch', {'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary btn-lg">Choose Resources</a>
-                    <button class="btn btn-outline-primary btn-lg" id="add_resource_button">Add Resource</button></p>
+                <p>
+                    {% if course.deepLinkingUrl|toString is not empty %}
+                        <a href="{{ path('deeplinkLaunch', {'uuid': course.id|toString}) }}" target="_blank" class="btn btn-outline-secondary btn-lg">Choose Resources</a>
+                    {% endif %}
+                    <button class="btn btn-outline-primary btn-lg" id="add_resource_button">Add Resource</button>
+                </p>
 
                 <br />
-
 
                 <div class="card text-left d-none" id="add_resource_form">
                     <div class="card-header">

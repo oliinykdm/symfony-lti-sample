@@ -14,6 +14,8 @@ use CourseHub\Course\Application\Create\CreateCompletion;
 use CourseHub\Course\Application\Create\CreateCompletionHandler;
 use CourseHub\Course\Application\Create\CreateCourseResource;
 use CourseHub\Course\Application\Create\CreateCourseResourceHandler;
+use CourseHub\Course\Application\Update\UpdateCourse;
+use CourseHub\Course\Application\Update\UpdateCourseHandler;
 use Firebase\JWT\JWK;
 use Firebase\JWT\Key;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,7 +34,8 @@ class ApiController extends AbstractController
         private CreateCompletionHandler $createCompletionHandler,
         private CourseCompletionReader $courseCompletionReader,
         private CreateCourseResourceHandler $createCourseResourceHandler,
-        private CourseResourceReader $courseResourceReader
+        private CourseResourceReader $courseResourceReader,
+        private UpdateCourseHandler $updateCourseHandler
     ) {}
     /**
      * @Route("/api/lti/certs", methods={"GET"}, name="certs")
@@ -312,6 +315,114 @@ class ApiController extends AbstractController
         ]);
 
     }
+
+    /**
+     * @Route("/api/lti/tool-registration/{courseId}", methods={"POST", "GET"}, name="tool-registration")
+     */
+    public function toolRegistration($courseId, Request $request): Response
+    {
+        $course = $this->courseReader->findById(RequiredUuid::fromString($courseId));
+        $parametersAsArray = [];
+        if ($content = $request->getContent()) {
+            $parametersAsArray = json_decode($content, true);
+        }
+        $config = $parametersAsArray['https://purl.imsglobal.org/spec/lti-tool-configuration'];
+        file_put_contents('test1.txt', json_encode( $config['messages'][0]));
+        $updateCourse = $this->updateCourseHandler->handle(
+            new UpdateCourse(
+                $courseId,
+                $parametersAsArray['client_name'],
+                $config['target_link_uri'],
+                $parametersAsArray['initiate_login_uri'],
+                $parametersAsArray['jwks_uri'],
+                $config['messages'][0]['target_link_uri'], // deeplink url
+            )
+        );
+
+            $payload = [
+                'client_id' => $course->getClientId()->value(),
+                // 'registration_client_uri' => '',
+                'application_type' => 'web',
+                'response_types' => ['id_token'],
+                'grant_types' => ['implict', 'client_credentials'],
+                'initiate_login_uri' => $course->getInitiateLoginUrl()->value(),
+                'redirect_uris' => [
+                    $course->getToolUrl()->value(),
+                    $course->getDeepLinkingUrl()->value()
+                ],
+                'client_name' => 'easylearn',
+                'jwks_uri' => $course->getJwksUrl()->value(),
+                'logo_uri' => '',
+                'token_endpoint_auth_method' => 'private_key_jwt',
+                'contacts' => [],
+                'scope' => 'https://purl.imsglobal.org/spec/lti-ags/scope/score',
+                'https://purl.imsglobal.org/spec/lti-tool-configuration' => [
+                    'domain' => $config['domain'],
+                    'target_link_uri' => $course->getToolUrl()->value(),
+                    'deployment_id' => $course->getDeploymentId()->value(),
+                    'custom_parameters' => [
+
+                    ],
+                    'claims' => [
+                        'iss', 'sub'
+                    ],
+                    'messages' => [
+                        [
+                            'type' => 'LtiDeepLinkingRequest',
+                            'target_link_uri' => $course->getDeepLinkingUrl()->value(),
+                            'label' => $course->getToolName()->value(),
+                        ]
+                    ]
+                ]
+                ];
+
+        $response = new JsonResponse($payload, Response::HTTP_OK);
+        $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
+        return $response;
+    }
+
+    /**
+     * @Route("/api/lti/openid-configuration/{courseId}", methods={"POST", "GET"}, name="openid-registration")
+     */
+    public function openIdConfiguration($courseId, Request $request): Response
+    {
+        $course = $this->courseReader->findById(RequiredUuid::fromString($courseId));
+        if($course) {
+            $scopes[] = 'openid';
+            $payload = [
+                'issuer' => $request->getSchemeAndHttpHost(),
+                'token_endpoint' => $request->getSchemeAndHttpHost() . '/api/lti/token',
+                'token_endpoint_auth_methods_supported' => ['private_key_jwt'],
+                'token_endpoint_auth_signing_alg_values_supported' => ['RS256'],
+                'jwks_uri' => $request->getSchemeAndHttpHost() . '/api/lti/certs',
+                'authorization_endpoint' => $request->getSchemeAndHttpHost() . '/api/lti/auth',
+                'registration_endpoint' => $request->getSchemeAndHttpHost() . '/api/lti/tool-registration/' . $courseId,
+                'scopes_supported' => $scopes,
+                'response_types_supported' => ['id_token'],
+                'subject_types_supported' => ['public', 'pairwise'],
+                'id_token_signing_alg_values_supported' => ['RS256'],
+                'claims_supported' => ['sub', 'iss', 'name', 'given_name', 'family_name', 'email'],
+                'https://purl.imsglobal.org/spec/lti-platform-configuration' => [
+                    'product_family_code' => 'elch',
+                    'version' => '6.5',
+                    'messages_supported' => [
+                        ['type' => 'LtiResourceLinkRequest'],
+                        ['type' => 'LtiDeepLinkingRequest', 'placements' => ['ContentArea']]
+                    ],
+                    // 'variables' => array_keys()
+                    // capabilities of platform
+                ]
+            ];
+        }
+        else {
+            $payload = 'bad_course';
+        }
+        $response = new JsonResponse($payload, Response::HTTP_OK);
+        $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
+        return $response;
+    }
+
+
     /**
      * @Route("/api/lti/deeplink/{courseId}", methods={"POST", "GET"}, name="deeplink")
      */
