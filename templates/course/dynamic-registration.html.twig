@@ -1,10 +1,23 @@
-<form action="{{ redirect_uri }}" name="ltiAuthForm" id="ltiAuthForm" method="post" enctype="application/x-www-form-urlencoded">
+{% extends 'base.html.twig' %}
+ {% block body %}
+<form action="{{ redirect_uri }}" name="dynamicRegistrationForm" id="dynamicRegistrationForm" method="post" target="registration" enctype="application/x-www-form-urlencoded">
     {% for key, value in params %}
         <input type="hidden" name="{{ key }}" value="{{ value }}"/>
     {% endfor %}
+        <button style="display: none" id="send-form">Send</button>
 </form>
 <script type="text/javascript">
     //<![CDATA[
-    document.ltiAuthForm.submit();
+  //  document.dynamicRegistrationForm.submit();
     //]]>
+    $( document ).ready(function() {
+            $('#send-form').click();
+    });
+    window.addEventListener("message", (event) => {
+        if(event.data.subject === 'org.imsglobal.lti.close') {
+            location.href = '{{ path('edit', {'uuid': courseId}) }}';
+        }
+    }, false);
 </script>
+<iframe name="registration" src="" width="100%" height="100%"></iframe>
+{%  endblock %}

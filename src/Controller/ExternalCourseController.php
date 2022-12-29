@@ -46,7 +46,6 @@ class ExternalCourseController extends AbstractController
         private AuthHelper $authHelper,
         private CourseCompletionReader $courseCompletionReader,
         private CourseResourceReader $courseResourceReader,
-        private HttpClientInterface $client
     ) {}
     /**
      * @Route("/course/list", methods={"GET"}, name="course_list")
@@ -177,6 +176,7 @@ class ExternalCourseController extends AbstractController
                         $request->get('initiate_login_url'),
                         $request->get('jwks_url'),
                         $deepLinkingUrl,
+                        null
                     )
                 );
 
@@ -289,6 +289,7 @@ class ExternalCourseController extends AbstractController
                         'filled_by_dynamic_registration',
                         'filled_by_dynamic_registration',
                         'filled_by_dynamic_registration',
+                        null,
                     )
                 );
                 $getNewCourse = $this->courseReader->findById(RequiredUuid::fromString($newCourseId));
@@ -305,6 +306,7 @@ class ExternalCourseController extends AbstractController
 
                 return $this->render('course/dynamic-registration.html.twig', [
                     'params' => $params,
+                    'courseId' => $getNewCourse->getId()->value(),
                     'redirect_uri' => $dynamicRegistrationUrl,
                 ]);
 
@@ -320,6 +322,7 @@ class ExternalCourseController extends AbstractController
                 $request->get('initiate_login_url'),
                 $request->get('jwks_url'),
                 $request->get('deep_linking_url'),
+                null
             )
         );
 

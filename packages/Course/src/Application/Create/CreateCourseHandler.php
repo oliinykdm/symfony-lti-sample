@@ -7,7 +7,6 @@ use CourseHub\Course\Application\Course;
 
 use CourseHub\Course\Application\CourseValidator;
 use CourseHub\Course\Application\CourseWriter;
-use CourseHub\Lti\Application\LtiConnector;
 
 
 final class CreateCourseHandler
@@ -28,7 +27,8 @@ final class CreateCourseHandler
             $command->getJwksUrl(),
             $command->getDeepLinkingUrl(),
             RequiredUuid::generate(),
-            RequiredUuid::generate()
+            RequiredUuid::generate(),
+            null
         );
 
         $this->courseValidator->validateCreate($command);
@@ -40,7 +40,6 @@ final class CreateCourseHandler
             $this->messageWriter->create($courseToSave);
             $this->createCourseTokenHandler->handle(
                 new CreateCourseToken(
-                    RequiredUuid::generate()->value(),
                     $command->getId()->value(),
                     '',
                     RequiredUuid::generate()->value(),

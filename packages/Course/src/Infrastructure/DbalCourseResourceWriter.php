@@ -42,6 +42,14 @@ final class DbalCourseResourceWriter implements CourseResourceWriter
         $qb->executeStatement();
     }
 
+    public function deleteByCourseId(RequiredUuid $uuid): void
+    {
+        $qb = $this->connection->createQueryBuilder();
+        $qb->delete('course_resource');
+        $qb->andWhere("course_id = {$qb->createNamedParameter($uuid->value(), Types::GUID)}");
+        $qb->executeStatement();
+    }
+
     public function update(CourseResource $courseResource): void
     {
         $qb = $this->connection->createQueryBuilder();

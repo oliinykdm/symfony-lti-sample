@@ -10,6 +10,7 @@
                 <th scope="col">UUID</th>
                 <th scope="col">Tool Name</th>
                 <th scope="col">Edit</th>
+                <th scope="col"></th>
                 <th scope="col">Delete</th>
             </tr>
             </thead>
@@ -18,8 +19,10 @@
                 <tr>
                     <th>{{ course.uuid }}</th>
                     <td class="w-50">{{ course.tool_name }}</td>
+                    <td>{% if course.dump is not null %}<a href="{{ path('course_info', {'courseId': course.uuid}) }}" target="_blank" class="btn btn-outline-warning">Dump</a>{% endif %}</td>
                     <td><a href="/course/edit/{{ course.uuid }}" class="btn btn-outline-success">Edit</a></td>
                     <td><a href="/course/delete/{{ course.uuid }}" class="btn btn-outline-danger">Delete</a></td>
+
                 </tr>
 
             {% endfor %}

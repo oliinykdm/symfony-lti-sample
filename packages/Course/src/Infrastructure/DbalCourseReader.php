@@ -31,7 +31,7 @@ final class DbalCourseReader implements CourseReader
     public function findByClientId(RequiredUuid $clientId): ?Course
     {
         $qb = $this->connection->createQueryBuilder();
-        $qb->select('uuid', 'tool_name', 'tool_url', 'initiate_login_url', 'jwks_url', 'deep_linking_url', 'client_id', 'deployment_id');
+        $qb->select('uuid', 'tool_name', 'tool_url', 'initiate_login_url', 'jwks_url', 'deep_linking_url', 'client_id', 'deployment_id', 'dump');
         $qb->from('course');
         $qb->andWhere("client_id = {$qb->createNamedParameter($clientId->value(), Types::GUID)}");
         $row = $qb->executeQuery()->fetchAssociative();
@@ -49,13 +49,14 @@ final class DbalCourseReader implements CourseReader
             $row['deep_linking_url'],
             $row['client_id'],
             $row['deployment_id'],
+            $row['dump'],
         );
     }
 
     public function findById(RequiredUuid $uuid): ?Course
     {
         $qb = $this->connection->createQueryBuilder();
-        $qb->select('uuid', 'tool_name', 'tool_url', 'initiate_login_url', 'jwks_url', 'deep_linking_url', 'client_id', 'deployment_id');
+        $qb->select('uuid', 'tool_name', 'tool_url', 'initiate_login_url', 'jwks_url', 'deep_linking_url', 'client_id', 'deployment_id', 'dump');
         $qb->from('course');
         $qb->andWhere("uuid = {$qb->createNamedParameter($uuid->value(), Types::GUID)}");
         $row = $qb->executeQuery()->fetchAssociative();
@@ -73,6 +74,7 @@ final class DbalCourseReader implements CourseReader
             $row['deep_linking_url'],
             $row['client_id'],
             $row['deployment_id'],
+            $row['dump'],
         );
     }
 
@@ -84,7 +86,8 @@ final class DbalCourseReader implements CourseReader
         $jwksUrl,
         $deepLinkingUrl,
         $clientId,
-        $deploymentId
+        $deploymentId,
+        $dump,
     ): Course
     {
         return new Course(
@@ -96,6 +99,7 @@ final class DbalCourseReader implements CourseReader
             RequiredText::fromString($deepLinkingUrl),
             RequiredUuid::fromString($clientId),
             RequiredUuid::fromString($deploymentId),
+            $dump ? RequiredText::fromString($dump) : null,
         );
     }
 }

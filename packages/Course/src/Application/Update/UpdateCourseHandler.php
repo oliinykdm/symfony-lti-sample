@@ -23,7 +23,8 @@ final class UpdateCourseHandler
             $command->getJwksUrl(),
             $command->getDeepLinkingUrl(),
             null,
-            null
+            null,
+            $command->getDump()
         );
 
         $this->courseValidator->validateUpdate($command);

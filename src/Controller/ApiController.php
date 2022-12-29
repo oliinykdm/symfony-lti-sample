@@ -136,6 +136,25 @@ class ApiController extends AbstractController
         return $response;
     }
     /**
+     * @Route("/api/lti/course-info/{courseId}", methods={"POST", "GET"}, name="course_info")
+     */
+    public function courseInfo($courseId): JsonResponse
+    {
+        $course = $this->courseReader->findById(
+            RequiredUuid::fromString($courseId)
+        );
+
+        if(!$course) {
+            return new JsonResponse('invalid_course_id', Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = new JsonResponse(
+            $course->getDump()->value(), Response::HTTP_OK, [], true);
+
+        $response->setEncodingOptions($response->getEncodingOptions() | JSON_PRETTY_PRINT);
+        return $response;
+    }
+    /**
      * @Route("/api/lti/resource-info/{resourceId}", methods={"POST", "GET"}, name="resource_info")
      */
     public function resourceInfo($resourceId): JsonResponse
@@ -327,8 +346,7 @@ class ApiController extends AbstractController
             $parametersAsArray = json_decode($content, true);
         }
         $config = $parametersAsArray['https://purl.imsglobal.org/spec/lti-tool-configuration'];
-        file_put_contents('test1.txt', json_encode( $config['messages'][0]));
-        $updateCourse = $this->updateCourseHandler->handle(
+        $this->updateCourseHandler->handle(
             new UpdateCourse(
                 $courseId,
                 $parametersAsArray['client_name'],
@@ -336,6 +354,7 @@ class ApiController extends AbstractController
                 $parametersAsArray['initiate_login_uri'],
                 $parametersAsArray['jwks_uri'],
                 $config['messages'][0]['target_link_uri'], // deeplink url
+                $content,
             )
         );
 

@@ -13,7 +13,8 @@ final class UpdateCourse
         public string $toolUrl,
         public string $initiateLoginUrl,
         public string $jwksUrl,
-        public string $deepLinkingUrl
+        public string $deepLinkingUrl,
+        public ?string $dump,
     ) {}
 
     public function getUuid(): RequiredUuid
@@ -40,6 +41,9 @@ final class UpdateCourse
     {
         return RequiredText::fromString($this->deepLinkingUrl);
     }
-
+    public function getDump(): ?RequiredText
+    {
+        return $this->dump ? RequiredText::fromString($this->dump) : null;
+    }
 
 }

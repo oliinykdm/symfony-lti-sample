@@ -26,6 +26,7 @@
                 <button class="nav-link active" id="tool-data" data-bs-toggle="tab" data-bs-target="#tool-data-tab" type="button" role="tab" aria-controls="nav-tool-data" aria-selected="true">Tool Data</button>
                 <button class="nav-link" id="platform-data" data-bs-toggle="tab" data-bs-target="#platform-data-tab" type="button" role="tab" aria-controls="nav-platform-data" aria-selected="false">Platform Data</button>
                 <button class="nav-link" id="resources" data-bs-toggle="tab" data-bs-target="#resources-tab" type="button" role="tab" aria-controls="nav-resources" aria-selected="false">Resources</button>
+                {% if course.dump is not null %} <a class="nav-link" href="{{ path('course_info', {'courseId': course.id|toString}) }}" target="_blank">Dump</a>{% endif %}
             </div>
         </nav>
         <br />

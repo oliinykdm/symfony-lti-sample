@@ -4,6 +4,9 @@ namespace CourseHub\Course\Infrastructure;
 
 use CourseHub\Common\Domain\Types\RequiredUuid;
 use CourseHub\Course\Application\Course;
+use CourseHub\Course\Application\CourseResourceReader;
+use CourseHub\Course\Application\CourseResourceWriter;
+use CourseHub\Course\Application\CourseTokenWriter;
 use CourseHub\Course\Application\CourseWriter;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
@@ -11,7 +14,9 @@ use Doctrine\DBAL\Types\Types;
 final class DbalCourseWriter implements CourseWriter
 {
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
+        private CourseResourceWriter $courseResourceWriter,
+        private CourseTokenWriter $courseTokenWriter,
     ) {}
 
     public function create(Course $course): void
@@ -39,6 +44,9 @@ final class DbalCourseWriter implements CourseWriter
         $qb->delete('course');
         $qb->andWhere("uuid = {$qb->createNamedParameter($uuid->value(), Types::GUID)}");
         $qb->executeStatement();
+
+        $this->courseResourceWriter->deleteByCourseId($uuid);
+        $this->courseTokenWriter->deleteByCourseId($uuid);
     }
 
     public function update(Course $course): void
@@ -51,6 +59,9 @@ final class DbalCourseWriter implements CourseWriter
         $qb->set('tool_url', $qb->createNamedParameter($course->getToolUrl()->value()));
         $qb->set('jwks_url', $qb->createNamedParameter($course->getJwksUrl()->value()));
         $qb->set('deep_linking_url', $qb->createNamedParameter($course->getDeepLinkingUrl()->value()));
+        if($course->getDump()) {
+            $qb->set('dump', $qb->createNamedParameter($course->getDump()->value()));
+        }
         $qb->executeStatement();
     }
 }

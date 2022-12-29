@@ -16,6 +16,7 @@ final class Course
         private RequiredText $deepLinkingUrl,
         private ?RequiredUuid $clientId,
         private ?RequiredUuid $deploymentId,
+        private ?RequiredText $dump,
     ) {
     }
 
@@ -28,6 +29,7 @@ final class Course
         RequiredText $deepLinkingUrl,
         ?RequiredUuid $clientId,
         ?RequiredUuid $deploymentId,
+        ?RequiredText $dump,
     ): Course {
         return new self(
             $uuid,
@@ -37,7 +39,8 @@ final class Course
             $jwksUrl,
             $deepLinkingUrl,
             is_null($clientId) ? null : $clientId,
-            is_null($deploymentId) ? null : $deploymentId
+            is_null($deploymentId) ? null : $deploymentId,
+            is_null($dump) ? null : $dump,
         );
     }
 
@@ -72,5 +75,9 @@ final class Course
     public function getDeploymentId(): RequiredUuid
     {
         return $this->deploymentId;
+    }
+    public function getDump(): ?RequiredText
+    {
+        return $this->dump ?? null;
     }
 }

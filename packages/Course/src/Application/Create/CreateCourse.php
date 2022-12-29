@@ -13,7 +13,7 @@ final class CreateCourse
         public string $toolUrl,
         public string $initiateLoginUrl,
         public string $jwksUrl,
-        public string $deepLinkingUrl
+        public string $deepLinkingUrl,
     ) {}
 
     public function getId(): RequiredUuid

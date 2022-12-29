@@ -9,4 +9,5 @@ interface CourseTokenWriter
     public function create(CourseToken $courseToken): void;
     public function update(CourseToken $courseToken): void;
     public function delete(RequiredUuid $uuid): void;
+    public function deleteByCourseId(RequiredUuid $uuid): void;
 }

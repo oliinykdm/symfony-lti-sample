@@ -40,6 +40,14 @@ final class DbalCourseTokenWriter implements CourseTokenWriter
         $qb->executeStatement();
     }
 
+    public function deleteByCourseId(RequiredUuid $uuid): void
+    {
+        $qb = $this->connection->createQueryBuilder();
+        $qb->delete('course_token');
+        $qb->andWhere("course_id = {$qb->createNamedParameter($uuid->value(), Types::GUID)}");
+        $qb->executeStatement();
+    }
+
     public function update(CourseToken $courseToken): void
     {
         $qb = $this->connection->createQueryBuilder();

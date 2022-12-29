@@ -9,4 +9,5 @@ interface CourseResourceWriter
     public function create(CourseResource $courseResource): void;
     public function update(CourseResource $courseResource): void;
     public function delete(RequiredUuid $uuid): void;
+    public function deleteByCourseId(RequiredUuid $uuid): void;
 }

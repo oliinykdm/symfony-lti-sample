@@ -13,7 +13,7 @@
                             <li>
                                 <a href="{{ path('course_list') }}" class="nav-link text-white">
                                     <svg class="bi d-block mx-auto mb-1" width="24" height="24"><use xlink:href="#home"/></svg>
-                                    Courses List
+                                    {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}Courses{% else %}Resources{%endif %} List
                                 </a>
                             </li>
                             {% if user.user.role|toString == constant('CourseHub\\Common\\Domain\\LtiSettings::MEMBERSHIP_CONTENTDEVELOPER') %}
