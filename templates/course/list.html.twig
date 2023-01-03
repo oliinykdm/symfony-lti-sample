@@ -4,6 +4,8 @@
 
     {% block body %}
             <h2 class="pb-2 border-bottom">Courses</h2>
+
+        {% if courses is not null %}
         <table class="table table-striped table-hover">
             <thead>
             <tr>
@@ -22,12 +24,19 @@
                     <td>{% if course.dump is not null %}<a href="{{ path('course_info', {'courseId': course.uuid}) }}" target="_blank" class="btn btn-outline-warning">Dump</a>{% endif %}</td>
                     <td><a href="/course/edit/{{ course.uuid }}" class="btn btn-outline-success">Edit</a></td>
                     <td><a href="/course/delete/{{ course.uuid }}" class="btn btn-outline-danger">Delete</a></td>
-
                 </tr>
-
             {% endfor %}
-
             </tbody>
         </table>
 
+        {% else %}
+            <div class="col-md-12">
+                <div class="h-100 p-5 text-white rounded-3" style="background-color: #3c96a0">
+                    <h2>There are no courses added</h2>
+                    <p>Please add any course to be able to manage courses and resources.</p>
+
+                    <a class="btn btn-outline-light" href="/course/add">Add Course</a>
+                </div>
+            </div>
+        {% endif %}
     {% endblock %}

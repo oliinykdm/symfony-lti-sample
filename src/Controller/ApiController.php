@@ -390,8 +390,13 @@ class ApiController extends AbstractController
                             'type' => 'LtiDeepLinkingRequest',
                             'target_link_uri' => $course->getDeepLinkingUrl()->value(),
                             'label' => $course->getToolName()->value(),
-                        ]
-                    ]
+                        ],
+                        [
+                            'type' => 'LtiResourceLinkRequest',
+                            'target_link_uri' => $course->getToolUrl()->value(),
+                            'label' => $course->getToolName()->value(),
+                        ],
+                    ],
                 ]
                 ];
 
